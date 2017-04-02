@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -e # exit immediately if a simple command exits with a non-zero status
+set -u # report the usage of uninitialized variables
+
+# job name & index of this VM within cluster
+DEPLOYMENT_NAME="<%= spec.deployment %>"
+
+# e.g. JOB_NAME=redis, JOB_INDEX=0
+JOB_NAME='<%= name %>'
+JOB_INDEX="<%= spec.index %>"
+# full job name, like redis/0 or webapp/3
+JOB_FULL="$JOB_NAME/$JOB_INDEX"
+JOB_AZ="<%= spec.az %>"
+
+DOMAIN_NAME="<%= spec.dns_domain_name %>"
+
+INSTANCE_NAME="<%= spec.name %>"
+INSTANCE_ID="<%= spec.id %>"
+INSTANCE_ADDRESS="<%= spec.address %>"
+INSTANCE_IP="<%= spec.ip %>"
+
+<% if_p('login_banner.text') do |c| %>
+echo "<%=c%>" > /etc/issue.net
+<% end %>
+

@@ -1,0 +1,14 @@
+---
+name: login_banner
+
+description: |
+  Login_banner job manages the content of the file /etc/issue.net. There are
+  some variables predefined you can use in the text.
+
+templates:
+  bin/pre-start.erb: bin/pre-start
+
+properties:
+  login_banner.text:
+    description: "Login banner text for /etc/issue.net"
+

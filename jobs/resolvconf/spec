@@ -1,0 +1,21 @@
+---
+name: resolvconf
+
+description: |
+  Resolvconf job manages some domain, search and options for the dns resolver
+  See resolv.conf manual to define the options.
+
+templates:
+  bin/pre-start.erb: bin/pre-start
+
+properties:
+  resolvconf.domain:
+    description: Local domain name
+  resolvconf.search:
+    description: Search list separated by spaces for hostname lookup
+  resolvconf.options:
+    description: Internal resolver variables to be modified
+    example:
+      - timeout:3
+      - attempts:1
+

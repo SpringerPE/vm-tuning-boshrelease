@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -e # exit immediately if a simple command exits with a non-zero status
+set -u # report the usage of uninitialized variables
+
+JOB_DIR=/var/vcap/jobs/sysctl
+RUN_DIR=/var/vcap/sys/run/sysctl
+TMP_DIR=/var/vcap/sys/tmp/sysctl
+LOG_DIR=/var/vcap/sys/log/sysctl
+PIDFILE="${RUN_DIR}/pid"
+
+SYSCTL_SUFFIX_CONF="-sysctl-bosh-os-customize.conf"
+# Generate a backup with the original settings in order to load them
+# when the job is stopped.
+SYSCTL_BACKUP="${TMP_DIR}/sysctl.backup"
+SYSCTL_CONFIGURATOR="${JOB_DIR}/config/sysctl.conf.sh"
+
+mkdir -p ${RUN_DIR} ${LOG_DIR} ${TMP_DIR}
+chown -R vcap:vcap ${RUN_DIR} ${LOG_DIR} ${TMP_DIR}
+
+<% if p('sysctl.backup-restore') == true || p('sysctl.backup-restore') =~ (/(true|t|yes|y|1)$/i) %>
+# Generate a backup of the settings
+[ ! -f "${SYSCTL_BACKUP}" ] && /sbin/sysctl -a > "${SYSCTL_BACKUP}"
+<% end %>
+
+# Delete all settings
+rm -f /etc/sysctl.d/*-${SYSCTL_SUFFIX_CONF}
+
+case $1 in
+  start)
+    source ${SYSCTL_CONFIGURATOR}
+    # this script is a fire-and-forget, but monit doesn't play that game,
+    # so we tell monit to check a pid that's always there
+    echo 1 > $PIDFILE
+    ;;
+  stop)
+    rm -f ${PIDFILE}
+    [ -f "${SYSCTL_BACKUP}" ] && /sbin/sysctl -p ${SYSCTL_BACKUP}
+    ;;
+  *)
+    echo "Usage: ctl {start|stop}" ;;
+    exit 1
+esac
+
+# set the kernel variables, again. All the variables
+/sbin/sysctl --system
+

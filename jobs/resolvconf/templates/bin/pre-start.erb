@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -e # exit immediately if a simple command exits with a non-zero status
+set -u # report the usage of uninitialized variables
+
+touch /etc/resolvconf/resolv.conf.d/tail
+
+<% if_p('resolvconf.search') do |search| %>
+# replace of add entry
+sed -i '/^search /{h; s/search .*/search <%=search%>/}; ${x; /^$/{s//search <%=search%>/; H}; x}' /etc/resolvconf/resolv.conf.d/tail
+<% end.else do %>
+# Delete line
+sed -i '/^search .*/d' /etc/resolvconf/resolv.conf.d/tail
+<% end %>
+
+<% if_p('resolvconf.domain') do |domain| %>
+# replace of add entry
+sed -i '/^domain /{h; s/search .*/domain <%=domain%>/}; ${x; /^$/{s//domain <%=domain%>/; H}; x}' /etc/resolvconf/resolv.conf.d/tail
+<% end.else do %>
+# Delete line
+sed -i '/^domain .*/d' /etc/resolvconf/resolv.conf.d/tail
+<% end %>
+
+# Delete all options
+sed -i '/^options .*/d' /etc/resolvconf/resolv.conf.d/tail
+<% if_p('resolvconf.options') do |options| %>
+<% options.each do |option| %>
+echo "options <%=option%>" >> /etc/resolvconf/resolv.conf.d/tail
+<% end %>
+<% end %>
+
+# update
+/sbin/resolvconf -u
+

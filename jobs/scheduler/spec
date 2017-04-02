@@ -1,0 +1,18 @@
+---
+name: scheduler
+
+description: |
+  Scheduler job defines udev rules to manage the IO scheduler, global default or per device.
+
+templates:
+  bin/pre-start.erb: bin/pre-start
+
+properties:
+  scheduler.default:
+    description: Default IO scheduler.
+    example: noop
+  scheduler.devices:
+    description: List of map with device name and its scheduler.
+    example:
+      - name: sdb
+        scheduler: noop

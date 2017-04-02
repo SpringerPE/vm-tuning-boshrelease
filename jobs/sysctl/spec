@@ -1,0 +1,36 @@
+---
+name: sysctl
+
+description: |
+  Sysctl job manages the sys settings on the system, starting the job will apply the 
+  new settings defined on the properties and stopping will restore the orginal settings
+  on the system.
+
+templates:
+  bin/ctl.erb: bin/ctl
+  config/sysctl.conf.sh.erb: config/sysctl.conf.sh
+
+properties:
+  sysctl.backup-restore:
+    description: "Enable backup of the settings to be able to restore them back when the job is stopped."
+    default: true
+  sysctl.config:
+    description: "Define sysctl parameters to apply by defining group of settings which will be packed together in a file."
+    default: []
+    example:
+    - name: enable-ipv6
+      index: 70
+      config: |
+        # undo BOSH's stemcell's IPv6 lockdowns
+        # 10-ipv6-privacy.conf
+        net.ipv6.conf.all.use_tempaddr = 0
+        net.ipv6.conf.default.use_tempaddr = 0
+        # 60-bosh-sysctl.conf
+        net.ipv6.conf.all.accept_ra=1
+        net.ipv6.conf.default.accept_ra=1
+        net.ipv6.conf.all.disable_ipv6=0
+        net.ipv6.conf.default.disable_ipv6=0
+        net.ipv6.conf.default.accept_redirects=1
+        net.ipv6.conf.all.accept_redirects=1
+        net.ipv6.route.flush=0
+

@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+set -e # exit immediately if a simple command exits with a non-zero status
+set -u # report the usage of uninitialized variables
+
+<% p('users').each do |user| %>
+  <%  name = user['name']
+      disable = user['disable']
+      shell = user['shell']
+      uid = user['uid']
+      profile = user['profile']
+      comment = user['comment']
+      sudo = user['enable_sudo']
+      ssh = user['enable_ssh']
+      crypted_password = user['crypted_password']
+      keys = user['public_key']
+
+      if name.nil? || name.to_s.empty?
+        raise "User must be configured with a 'name' attribute. '#{user}'"
+      end
+      if !crypted_password.nil? && !crypted_password.match(/^\$6\$/)
+        raise "User: '#{name}' with crypted_password: '#{crypted_password}' does not appear to be a SHA512 encrypted password."
+      end
+
+      disable = (disable.nil? || disable.to_s.empty?) ? false : (disable == true || disable =~ (/(true|t|yes|y|1)$/i))
+      ssh = (ssh.nil? || ssh.to_s.empty?) ? true : (ssh == true || ssh =~ (/(true|t|yes|y|1)$/i))
+      sudo = (sudo.nil? || sudo.to_s.empty?) ? false : (sudo == true || sudo =~ (/(true|t|yes|y|1)$/i))
+      shell = (shell.nil? || shell.to_s.empty?) ? '/bin/bash' : shell.to_s
+
+      public_keys = []
+      if !keys.nil?
+        if keys.kind_of?(Array)
+          public_keys += keys
+        else
+          if !keys.to_s.empty?
+            public_keys << keys
+          end
+        end
+      end
+  %>
+### START <%=name%>
+getent passwd <%=name%> > /dev/null || useradd --user-group --create-home <%=name%>
+usermod --shell '<%=shell%>' <%=name%>
+<% if !comment.nil? && !comment.to_s.empty? %>usermod --comment '<%=comment%>' <%=name%><% end %>
+<% if !uid.nil? && !uid.to_s.empty? %>usermod --uid <%=uid%> <%=name%><% end %>
+usergroups="vcap,admin"
+<% if sudo %>usergroups="${usergroups},bosh_sudoers"<% end %>
+<% if ssh %>grep -q 'bosh_sshers:' /etc/group && usergroups="${usergroups},bosh_sshers"<% end %>
+usermod -G ${usergroups} <%=name%>
+chmod 700 ~<%=name%>
+mkdir -p ~<%=name%>/.ssh
+chmod 700 ~<%=name%>/.ssh
+chown -R <%=name%> ~<%=name%>/.ssh
+passwd -d <%=name%>
+rm -f ~<%=name%>/.ssh/authorized_keys
+<% if !crypted_password.nil? %>echo '<%=name%>:<%=crypted_password%>' | chpasswd -e<% end %>
+<% public_keys.each do |k| %>echo '<%=k%>' >> ~<%=name%>/.ssh/authorized_keys<% end %>
+[ -f ~<%=name%>/.ssh/authorized_keys ] && chmod 600 ~<%=name%>/.ssh/authorized_keys
+chown -R <%=name%> ~<%=name%>/.ssh
+<% if disable %># Disabling user
+passwd -l <%=name%>
+<% end %>
+rm -f ~<%=name%>/.profile
+<% if !profile.nil? && !profile.to_s.empty? %>(
+cat <<'EOF'
+<%=profile%>
+EOF
+) > ~<%=name%>/.profile
+<% else %>
+[ -f /etc/skel/.profile ] && cp /etc/skel/.profile ~<%=name%>/.profile
+<% end %>
+chown <%=name%> ~<%=name%>/.profile
+### END <%=name%>
+<% end %>
+

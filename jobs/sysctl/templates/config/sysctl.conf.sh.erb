@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -e
+
+# Generate all configuration
+<% p("sysctl.config", []).each do |conf| %>
+<%  name = conf['name']
+    index = conf['index']
+    config = conf['config']
+
+    if name.nil? || name.to_s.empty?
+      raise "Config must be configured with a 'name' attribute. '#{conf}'"
+    end
+    if config.nil? || config.to_s.empty?
+      raise "Config must have some settings, it is empty. '#{conf}'"
+    end
+    index = (index.nil? || index.to_s.empty?) ? '70' : index.to_s
+%>
+### START <%= index %>-<%= name %>${SYSCTL_SUFFIX_CONF}
+(
+cat <<'EOF'
+<%=config%>
+EOF
+) > /etc/sysctl.d/<%= index %>-<%= name %>${SYSCTL_SUFFIX_CONF}
+### END <%= index %>-<%= name %>${SYSCTL_SUFFIX_CONF}
+<% end %>
+

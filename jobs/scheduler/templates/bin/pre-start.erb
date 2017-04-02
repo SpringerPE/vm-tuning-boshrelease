@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -e # exit immediately if a simple command exits with a non-zero status
+set -u # report the usage of uninitialized variables
+
+SCHEDULER_DEFAULT_UDEV=/etc/udev/rules.d/60-bosh-scheduler.rules
+<% if_p("scheduler.default") do |scheduler| %>
+SCHEDULER_DEFAULT="<%=scheduler%>"
+for drive_scheduler in /sys/block/sd?/queue/scheduler; do
+  if [ "$(<$drive_scheduler)" != "none" ]; then
+    echo ${SCHEDULER_DEFAULT} > "$drive_scheduler"
+  fi
+done
+# In case VM is restarted
+cat <<EOF > ${SCHEDULER_DEFAULT_UDEV}
+ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="${SCHEDULER_DEFAULT}"
+EOF
+<% end.else do %>
+rm -f ${SCHEDULER_DEFAULT_UDEV}
+<% end %>
+
+# Delete all specific udev rules
+rm -f /etc/udev/rules.d/61-*-bosh-scheduler.rules
+<% if_p("scheduler.devices") do |devices| %>
+<% devices.each do |device| %>
+# <%=device['name']%>
+SCHEDULER_UDEV="/etc/udev/rules.d/61-<%=device['name']%>-bosh-scheduler.rules"
+DEVICE_SCHEDULER="/sys/block/<%=device['name']%>/queue/scheduler"
+if [ -f "${DEVICE_SCHEDULER}" ]; then
+  echo '<%=device["scheduler"]%>' > ${DEVICE_SCHEDULER}
+  if [ "$(<${DEVICE_SCHEDULER})" != "<%=device['scheduler']%>" ]; then
+    echo "Cannot change scheduler for device <%=device['name']%> from '$(<${DEVICE_SCHEDULER})' to '<%=device['scheduler']%>'."
+    exit 1
+  fi
+  echo "ACTION==\"add|change\", KERNEL==\"<%=device['name']%>\", ATTR{queue/rotational}==\"0\", ATTR{queue/scheduler}=\"<%=device['scheduler']%>\"" > ${SCHEDULER_UDEV}
+else
+  echo "Cannot find device <%=device['name']%> on this system"
+  exit 1
+fi
+<% end %>
+<% end %>
+
