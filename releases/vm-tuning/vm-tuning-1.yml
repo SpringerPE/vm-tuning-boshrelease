@@ -1,0 +1,35 @@
+---
+packages: []
+jobs:
+- name: users
+  version: b026e7ea6908590d20f15ce766829b360f1bbabb
+  fingerprint: b026e7ea6908590d20f15ce766829b360f1bbabb
+  sha1: 8d52d0ea8786b7966329843e59dc42c8f0b2151a
+- name: sysctl
+  version: 61cd002a97ca40f95905b23206feab0bc5c82194
+  fingerprint: 61cd002a97ca40f95905b23206feab0bc5c82194
+  sha1: 0b764e594e4378f37e0bacc8a3e0f548f3fea7d9
+- name: login_banner
+  version: ca15835c053f4ad76e18be4af205980d94dccd46
+  fingerprint: ca15835c053f4ad76e18be4af205980d94dccd46
+  sha1: 4cc7c943f6993a83af0fb2d4d41e76a9c77e2283
+- name: hosts
+  version: 243e8e956378724c92ac49c43ff548d5719db17c
+  fingerprint: 243e8e956378724c92ac49c43ff548d5719db17c
+  sha1: 56f57817e178d957aabc898e47f10410743e68e5
+- name: scheduler
+  version: 25b1b4f476e4998731ecb51a6b876be4717b5d5e
+  fingerprint: 25b1b4f476e4998731ecb51a6b876be4717b5d5e
+  sha1: d1e99e2aac7046a4f94548a4d3200bf75b18468f
+- name: resolvconf
+  version: 1db48132df6a36efbfd4637695724cc3101c4048
+  fingerprint: 1db48132df6a36efbfd4637695724cc3101c4048
+  sha1: d901d0b998e33d65d8d87451c986122c4b8d737d
+license:
+  version: de85d90e6d59cd511c2b52d8204bb7fe2d892162
+  fingerprint: de85d90e6d59cd511c2b52d8204bb7fe2d892162
+  sha1: cf02682359c766ee7fe3cfc958ad9ede425c2579
+commit_hash: cfe1ca05
+uncommitted_changes: true
+name: vm-tuning
+version: '1'
