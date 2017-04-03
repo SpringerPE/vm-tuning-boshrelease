@@ -24,14 +24,15 @@ rm -f /etc/udev/rules.d/61-*-bosh-scheduler.rules
 <% devices.each do |device| %>
 # <%=device['name']%>
 SCHEDULER_UDEV="/etc/udev/rules.d/61-<%=device['name']%>-bosh-scheduler.rules"
+SCHEDULER_DEVICE="<%=device['scheduler']%>"
 DEVICE_SCHEDULER="/sys/block/<%=device['name']%>/queue/scheduler"
 if [ -f "${DEVICE_SCHEDULER}" ]; then
-  echo '<%=device["scheduler"]%>' > ${DEVICE_SCHEDULER}
-  if [ "$(<${DEVICE_SCHEDULER})" != "<%=device['scheduler']%>" ]; then
-    echo "Cannot change scheduler for device <%=device['name']%> from '$(<${DEVICE_SCHEDULER})' to '<%=device['scheduler']%>'."
+  echo "${SCHEDULER_DEVICE}" > ${DEVICE_SCHEDULER}
+  if [ "$(sed 's/.*\[\(.*\)\].*/\1/g' ${DEVICE_SCHEDULER})" != "${SCHEDULER_DEVICE}" ]; then
+    echo "Cannot change scheduler for device <%=device['name']%> from '$(<${DEVICE_SCHEDULER})' to '${SCHEDULER_DEVICE}'."
     exit 1
   fi
-  echo "ACTION==\"add|change\", KERNEL==\"<%=device['name']%>\", ATTR{queue/rotational}==\"0\", ATTR{queue/scheduler}=\"<%=device['scheduler']%>\"" > ${SCHEDULER_UDEV}
+  echo "ACTION==\"add|change\", KERNEL==\"<%=device['name']%>\", ATTR{queue/rotational}==\"0\", ATTR{queue/scheduler}=\"${SCHEDULER_DEVICE}\"" > ${SCHEDULER_UDEV}
 else
   echo "Cannot find device <%=device['name']%> on this system"
   exit 1
