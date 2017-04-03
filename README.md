@@ -14,6 +14,79 @@ Capabilities of the jobs:
   resolv.conf manual to define the options.
 * `login_banner` manages the content of the file /etc/issue.net. There are
   some variables predefined you can use in the text.
+* `hosts` manages static dns entries defined in /etc/hosts
+
+## Usage
+
+Example manifest with job properties:
+```
+  jobs:
+  - name: sysctl
+    release: vm-tuning
+    properties:
+      sysctl:
+        config:
+        - name: enable-ipv6
+          index: 70
+          config: |
+            # undo BOSH's stemcell's IPv6 lockdowns
+            # 10-ipv6-privacy.conf
+            net.ipv6.conf.all.use_tempaddr = 0
+            net.ipv6.conf.default.use_tempaddr = 0
+            # 60-bosh-sysctl.conf
+            net.ipv6.conf.all.accept_ra=1
+            net.ipv6.conf.default.accept_ra=1
+            net.ipv6.conf.all.disable_ipv6=0
+            net.ipv6.conf.default.disable_ipv6=0
+            net.ipv6.conf.default.accept_redirects=1
+            net.ipv6.conf.all.accept_redirects=1
+            net.ipv6.route.flush=0
+  - name: hosts
+    release: vm-tuning
+    properties: {}
+      hosts:
+        "192.168.1.10": ['fqdn.domain.com', 'alias', 'name'] 
+        "fe00::0": []
+  - name: resolvconf
+    release: vm-tuning
+    properties:
+      resolvconf:
+        search: local springer.com
+        options:
+        - "timeout:3"
+        - "attempts:1"
+  - name: scheduler
+    release: vm-tuning
+    properties:
+      scheduler:
+        default: noop
+        devices:
+        - name: sdb
+          scheduler: cfq
+  - name: users
+    release: vm-tuning
+    properties:
+      users:
+      - name: jriguera
+        uid: 1010
+        disable: false
+        sudo: true
+        ssh: true
+        public_key:
+         - ssh-rsa AAAA .... kna jriguera@thinkpad
+  - name: login_banner
+    release: vm-tuning
+    properties:
+      login_banner:
+        text: |
+          This server is managed by Bosh Director
+           ___ ___
+          | _ \ __|   It's PE,
+          |  _/ _|      baby!
+          |_| |___|             platform-engineering@example.com
+          
+          # $JOB_FULL on $DEPLOYMENT_NAME
+```
 
 
 ## Development
