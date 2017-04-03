@@ -4,20 +4,18 @@ set -u # report the usage of uninitialized variables
 
 touch /etc/resolvconf/resolv.conf.d/tail
 
-<% if_p('resolvconf.search') do |search| %>
-# replace of add entry
-sed -i '/^search /{h; s/search .*/search <%=search%>/}; ${x; /^$/{s//search <%=search%>/; H}; x}' /etc/resolvconf/resolv.conf.d/tail
-<% end.else do %>
-# Delete line
+# Delete
 sed -i '/^search .*/d' /etc/resolvconf/resolv.conf.d/tail
+<% if_p('resolvconf.search') do |search| %>
+# Add search
+echo "search <%=search%>" >> /etc/resolvconf/resolv.conf.d/tail
 <% end %>
 
-<% if_p('resolvconf.domain') do |domain| %>
-# replace of add entry
-sed -i '/^domain /{h; s/search .*/domain <%=domain%>/}; ${x; /^$/{s//domain <%=domain%>/; H}; x}' /etc/resolvconf/resolv.conf.d/tail
-<% end.else do %>
-# Delete line
+# Delete
 sed -i '/^domain .*/d' /etc/resolvconf/resolv.conf.d/tail
+<% if_p('resolvconf.domain') do |domain| %>
+# Add domain
+echo "domain <%=domain%>" >> /etc/resolvconf/resolv.conf.d/tail
 <% end %>
 
 # Delete all options
@@ -30,4 +28,3 @@ echo "options <%=option%>" >> /etc/resolvconf/resolv.conf.d/tail
 
 # update
 /sbin/resolvconf -u
-
