@@ -9,8 +9,8 @@ set -u # report the usage of uninitialized variables
       uid = user['uid']
       profile = user['profile']
       comment = user['comment']
-      sudo = user['enable_sudo']
-      ssh = user['enable_ssh']
+      sudo = user['sudo']
+      ssh = user['ssh']
       crypted_password = user['crypted_password']
       keys = user['public_key']
 
@@ -47,18 +47,19 @@ usergroups="vcap,admin"
 <% if ssh %>grep -q 'bosh_sshers:' /etc/group && usergroups="${usergroups},bosh_sshers"<% end %>
 usermod -G ${usergroups} <%=name%>
 chmod 700 ~<%=name%>
-mkdir -p ~<%=name%>/.ssh
-chmod 700 ~<%=name%>/.ssh
-chown -R <%=name%> ~<%=name%>/.ssh
 passwd -d <%=name%>
-rm -f ~<%=name%>/.ssh/authorized_keys
 <% if !crypted_password.nil? %>echo '<%=name%>:<%=crypted_password%>' | chpasswd -e<% end %>
+mkdir -p ~<%=name%>/.ssh
+rm -f ~<%=name%>/.ssh/authorized_keys
+<% if disable %># Disabling user
+usermod --shell '/sbin/nologin' <%=name%>
+passwd -l <%=name%>
+<% else %>
 <% public_keys.each do |k| %>echo '<%=k%>' >> ~<%=name%>/.ssh/authorized_keys<% end %>
 [ -f ~<%=name%>/.ssh/authorized_keys ] && chmod 600 ~<%=name%>/.ssh/authorized_keys
-chown -R <%=name%> ~<%=name%>/.ssh
-<% if disable %># Disabling user
-passwd -l <%=name%>
 <% end %>
+chmod 700 ~<%=name%>/.ssh
+chown -R <%=name%>:<%=name%> ~<%=name%>/.ssh
 rm -f ~<%=name%>/.profile
 <% if !profile.nil? && !profile.to_s.empty? %>(
 cat <<'EOF'
@@ -68,7 +69,7 @@ EOF
 <% else %>
 [ -f /etc/skel/.profile ] && cp /etc/skel/.profile ~<%=name%>/.profile
 <% end %>
-chown <%=name%> ~<%=name%>/.profile
+chown <%=name%>:<%=name%> ~<%=name%>/.profile
 ### END <%=name%>
 <% end %>
 
