@@ -23,7 +23,7 @@ chown -R vcap:vcap ${RUN_DIR} ${LOG_DIR} ${TMP_DIR}
 <% end %>
 
 # Delete all settings
-rm -f /etc/sysctl.d/*-${SYSCTL_SUFFIX_CONF}
+rm -f /etc/sysctl.d/*${SYSCTL_SUFFIX_CONF}
 
 case $1 in
   start)
@@ -37,10 +37,11 @@ case $1 in
     [ -f "${SYSCTL_BACKUP}" ] && /sbin/sysctl -p ${SYSCTL_BACKUP}
     ;;
   *)
-    echo "Usage: ctl {start|stop}" ;;
+    echo "Usage: ctl {start|stop}"
     exit 1
+    ;;
 esac
 
-# set the kernel variables, again. All the variables
+# reload the kernel variables
 /sbin/sysctl --system
 

@@ -2,8 +2,8 @@
 set -e
 
 # Generate all configuration
-<% p("sysctl.config", []).each do |conf| %>
-<%  name = conf['name']
+<% p("sysctl.config", []).each do |conf|
+    name = conf['name']
     index = conf['index']
     config = conf['config']
 
@@ -20,7 +20,7 @@ set -e
 cat <<'EOF'
 <%=config%>
 EOF
-) > /etc/sysctl.d/<%= index %>-<%= name %>${SYSCTL_SUFFIX_CONF}
+) > /etc/sysctl.d/<%=index%>-<%=name%>${SYSCTL_SUFFIX_CONF}
 ### END <%= index %>-<%= name %>${SYSCTL_SUFFIX_CONF}
 <% end %>
 
