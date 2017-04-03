@@ -1,0 +1,18 @@
+---
+name: hosts
+
+description: |
+  Host job manages static dns entries in /etc/hosts
+
+templates:
+  bin/pre-start.erb: bin/pre-start
+
+properties:
+  hosts:
+    description: List of hash lines to add or delete
+    example:
+      "192.168.1.10": ['fqdn.domain.com', 'alias', 'name'] 
+      "fe00::0": ['ip6-localnet']
+      # Empty string or list deletes the entry
+      "ff02::3": []
+

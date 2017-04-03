@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -e # exit immediately if a simple command exits with a non-zero status
+set -u # report the usage of uninitialized variables
+
+BACKUP="/var/vcap/sys/tmp/hosts/hosts.backup"
+
+mkdir -p $(dirname ${BACKUP})
+[ ! -f "${BACKUP}" ] && cp /etc/hosts "${BACKUP}"
+
+<% if_p('hosts') do |h|
+  pattern = /(\.)/
+  h.each do |ip, n|
+    names = []
+    delete = false
+    escapedip = ip.gsub(pattern){|match|"\\" + match}
+    if !n.nil?
+      if n.kind_of?(Array)
+        if !n.empty?
+          names += n
+        else
+          delete = true
+        end
+      else
+        if !n.to_s.empty?
+          names << n.to_s
+        else
+          delete = true
+        end
+      end
+    end
+%>
+sed -i -e "/^<%=escapedip%>[[:space:]]\+.*/d" /etc/hosts
+<% if !names.empty? && !delete %>
+echo -e "<%=ip%>\t<%=names.join(' ')%>" >> /etc/hosts
+<% end %>
+<% end %>
+<% end.else do %>
+# Recover from backup
+[ -f "${BACKUP}" ] && cp -a "${BACKUP}" /etc/hosts
+<% end %>
+
