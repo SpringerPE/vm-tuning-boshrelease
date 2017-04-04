@@ -1,6 +1,6 @@
-# BOSH Release for tuning up a VM
+# BOSH Release for VM fine tuning
 
-The purpose of this release is provide a way to tune up and customize a VM.
+The purpose of this release is provide a way to fine tune and customize a VM.
 
 Capabilities of the jobs:
 
