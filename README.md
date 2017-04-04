@@ -115,6 +115,8 @@ After that, you can also, upload the new release to bosh director `bosh upload r
 
 # Author
 
+Based on https://github.com/cloudfoundry/os-conf-release
+
 Springer Nature Platform Engineering, Jose Riguera
 
 Copyright 2017 Springer Nature
